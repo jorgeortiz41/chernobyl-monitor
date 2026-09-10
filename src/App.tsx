@@ -13,6 +13,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { invoke } from "@tauri-apps/api/core";
 
 /* ============================================================================
  * DATA CONTRACT — mirrors the Rust backend. Do not extend.
@@ -45,18 +46,81 @@ const MOCK_CORE_COUNT = 8;
 const MOCK_TOTAL_MEMORY = 32 * 1024 ** 3;
 
 const MOCK_PROC_NAMES = [
-  "kernel_task", "launchd", "WindowServer", "loginwindow", "mds_stores",
-  "coreaudiod", "bluetoothd", "hidd", "cfprefsd", "distnoted", "syslogd",
-  "notifyd", "diskarbitrationd", "powerd", "opendirectoryd", "securityd",
-  "trustd", "nsurlsessiond", "apsd", "rapportd", "sharingd", "spindump",
-  "fseventsd", "revisiond", "backupd", "mDNSResponder", "netbiosd",
-  "configd", "airportd", "usbmuxd", "cloudd", "bird", "gamed", "akd",
-  "identityservicesd", "imagent", "callservicesd", "avconferenced",
-  "tccd", "sandboxd", "amfid", "taskgated", "kextd", "watchdogd",
-  "thermald", "smcd", "iostat", "vmstat", "top", "zsh", "bash", "tmux",
-  "sshd", "cupsd", "ntpd", "nginx", "postgres", "redis-server", "dockerd",
-  "containerd", "node", "bun", "esbuild", "vite", "tsserver", "rust-analyzer",
-  "cargo", "rustc", "clang", "ld", "git", "gh", "ripgrep", "fd", "ffmpeg",
+  "kernel_task",
+  "launchd",
+  "WindowServer",
+  "loginwindow",
+  "mds_stores",
+  "coreaudiod",
+  "bluetoothd",
+  "hidd",
+  "cfprefsd",
+  "distnoted",
+  "syslogd",
+  "notifyd",
+  "diskarbitrationd",
+  "powerd",
+  "opendirectoryd",
+  "securityd",
+  "trustd",
+  "nsurlsessiond",
+  "apsd",
+  "rapportd",
+  "sharingd",
+  "spindump",
+  "fseventsd",
+  "revisiond",
+  "backupd",
+  "mDNSResponder",
+  "netbiosd",
+  "configd",
+  "airportd",
+  "usbmuxd",
+  "cloudd",
+  "bird",
+  "gamed",
+  "akd",
+  "identityservicesd",
+  "imagent",
+  "callservicesd",
+  "avconferenced",
+  "tccd",
+  "sandboxd",
+  "amfid",
+  "taskgated",
+  "kextd",
+  "watchdogd",
+  "thermald",
+  "smcd",
+  "iostat",
+  "vmstat",
+  "top",
+  "zsh",
+  "bash",
+  "tmux",
+  "sshd",
+  "cupsd",
+  "ntpd",
+  "nginx",
+  "postgres",
+  "redis-server",
+  "dockerd",
+  "containerd",
+  "node",
+  "bun",
+  "esbuild",
+  "vite",
+  "tsserver",
+  "rust-analyzer",
+  "cargo",
+  "rustc",
+  "clang",
+  "ld",
+  "git",
+  "gh",
+  "ripgrep",
+  "fd",
+  "ffmpeg",
 ];
 
 function mockRand(seedRef: { s: number }): number {
@@ -671,12 +735,29 @@ body {
  * FASTENERS AND PLATES
  * ========================================================================== */
 
-function Screw({ corner, rot }: { corner: "tl" | "tr" | "bl" | "br"; rot: number }) {
+function Screw({
+  corner,
+  rot,
+}: {
+  corner: "tl" | "tr" | "bl" | "br";
+  rot: number;
+}) {
   return (
-    <svg className={`screw screw--${corner}`} viewBox="0 0 10 10" aria-hidden="true">
+    <svg
+      className={`screw screw--${corner}`}
+      viewBox="0 0 10 10"
+      aria-hidden="true"
+    >
       <circle cx="5" cy="5.6" r="4.3" fill="rgba(0,0,0,0.32)" />
       <circle cx="5" cy="5" r="4.3" fill="#8B846F" />
-      <circle cx="5" cy="5" r="4.3" fill="none" stroke="#3A382F" strokeWidth="0.8" />
+      <circle
+        cx="5"
+        cy="5"
+        r="4.3"
+        fill="none"
+        stroke="#3A382F"
+        strokeWidth="0.8"
+      />
       <g transform={`rotate(${rot} 5 5)`}>
         <path d="M5 1.3 V8.7 M1.3 5 H8.7" stroke="#CFC7AE" strokeWidth="1.6" />
         <path d="M5 1.3 V8.7 M1.3 5 H8.7" stroke="#3A382F" strokeWidth="1.1" />
@@ -734,7 +815,8 @@ function Nameplate() {
     >
       <span className="nomen nomen--plate">Nexus Station &middot; Unit 1</span>
       <span className="nomen nomen--sub">
-        Process Computer Console &middot; Panel 4C&#8209;117 &middot; Rev D 03&#8209;74
+        Process Computer Console &middot; Panel 4C&#8209;117 &middot; Rev D
+        03&#8209;74
       </span>
     </div>
   );
@@ -781,11 +863,22 @@ function Lamp({ color, lit }: { color: LampColor; lit: boolean }) {
   );
 }
 
-function LampCell({ color, lit, label }: { color: LampColor; lit: boolean; label: string }) {
+function LampCell({
+  color,
+  lit,
+  label,
+}: {
+  color: LampColor;
+  lit: boolean;
+  label: string;
+}) {
   return (
     <div className="lampcell">
       <Lamp color={color} lit={lit} />
-      <span className="nomen nomen--sub" style={{ textAlign: "center", lineHeight: 1.1 }}>
+      <span
+        className="nomen nomen--sub"
+        style={{ textAlign: "center", lineHeight: 1.1 }}
+      >
         {label}
       </span>
     </div>
@@ -822,9 +915,18 @@ const SEG_GEOM: Record<string, string> = {
 };
 
 const SEG_MAP: Record<string, string> = {
-  "0": "abcdef", "1": "bc", "2": "abdeg", "3": "abcdg", "4": "bcfg",
-  "5": "acdfg", "6": "acdefg", "7": "abc", "8": "abcdefg", "9": "abcdfg",
-  "-": "g", " ": "",
+  "0": "abcdef",
+  "1": "bc",
+  "2": "abdeg",
+  "3": "abcdg",
+  "4": "bcfg",
+  "5": "acdfg",
+  "6": "acdefg",
+  "7": "abc",
+  "8": "abcdefg",
+  "9": "abcdfg",
+  "-": "g",
+  " ": "",
 };
 
 function SevenSegDigit({ char, scale }: { char: string; scale: number }) {
@@ -885,7 +987,10 @@ function SegmentReadout({
   /** Spoken form, when the packed numeric value is not what a reader means. */
   readAs?: string;
 }) {
-  const clamped = Math.max(0, Math.min(Math.pow(10, digits) - 1, Math.round(value)));
+  const clamped = Math.max(
+    0,
+    Math.min(Math.pow(10, digits) - 1, Math.round(value)),
+  );
   const text = String(clamped).padStart(digits, "0");
   const spoken = readAs ?? `${clamped}${units ? ` ${units}` : ""}`;
   return (
@@ -918,7 +1023,9 @@ function Bargraph({
   label: string;
   sub?: string;
 }) {
-  const lit = Math.round((Math.max(0, Math.min(100, value)) / 100) * BAR_SEGMENTS);
+  const lit = Math.round(
+    (Math.max(0, Math.min(100, value)) / 100) * BAR_SEGMENTS,
+  );
   const alarm = value >= 85;
   return (
     <div className="bargraph" style={{ flex: 1 }}>
@@ -940,7 +1047,9 @@ function Bargraph({
               style={
                 {
                   "--segon": red ? "var(--lamp-red)" : "var(--lamp-amber)",
-                  "--segoff": red ? "var(--lamp-red-off)" : "var(--lamp-amber-off)",
+                  "--segoff": red
+                    ? "var(--lamp-red-off)"
+                    : "var(--lamp-amber-off)",
                 } as React.CSSProperties
               }
             />
@@ -1019,12 +1128,24 @@ function SweepGauge({ value, label }: { value: number; label: string }) {
       {/* machined bezel */}
       <circle cx={G_CX} cy={G_CY} r="101" fill="var(--seam)" />
       <circle cx={G_CX} cy={G_CY} r="99" fill="var(--bezel)" />
-      <circle cx={G_CX} cy={G_CY} r="94" fill="none" stroke="#545044" strokeWidth="1.4" />
+      <circle
+        cx={G_CX}
+        cy={G_CY}
+        r="94"
+        fill="none"
+        stroke="#545044"
+        strokeWidth="1.4"
+      />
       <circle cx={G_CX} cy={G_CY} r="90" fill="var(--dial-face)" />
 
       {/* danger band 85-100 */}
       <path d={gAnnulus(85, 100, 74, 86)} fill="url(#dangerHatch)" />
-      <path d={gAnnulus(85, 100, 74, 86)} fill="none" stroke="#8E2118" strokeWidth="1.2" />
+      <path
+        d={gAnnulus(85, 100, 74, 86)}
+        fill="none"
+        stroke="#8E2118"
+        strokeWidth="1.2"
+      />
 
       {/* painted scale arc */}
       <path
@@ -1038,7 +1159,17 @@ function SweepGauge({ value, label }: { value: number; label: string }) {
         const a = gAngle(v);
         const [x1, y1] = gPolar(86, a);
         const [x2, y2] = gPolar(78, a);
-        return <line key={v} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--engrave)" strokeWidth="1.1" />;
+        return (
+          <line
+            key={v}
+            x1={x1}
+            y1={y1}
+            x2={x2}
+            y2={y2}
+            stroke="var(--engrave)"
+            strokeWidth="1.1"
+          />
+        );
       })}
 
       {majors.map((v) => {
@@ -1048,7 +1179,14 @@ function SweepGauge({ value, label }: { value: number; label: string }) {
         const [tx, ty] = gPolar(56, a);
         return (
           <g key={v}>
-            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--engrave)" strokeWidth="2.6" />
+            <line
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke="var(--engrave)"
+              strokeWidth="2.6"
+            />
             <text
               x={tx}
               y={ty + 5}
@@ -1100,7 +1238,14 @@ function SweepGauge({ value, label }: { value: number; label: string }) {
       </g>
       <circle cx={G_CX} cy={G_CY} r="9" fill="#3A382F" />
       <circle cx={G_CX} cy={G_CY} r="5.5" fill="#8B846F" />
-      <circle cx={G_CX} cy={G_CY} r="5.5" fill="none" stroke="#3A382F" strokeWidth="0.8" />
+      <circle
+        cx={G_CX}
+        cy={G_CY}
+        r="5.5"
+        fill="none"
+        stroke="#3A382F"
+        strokeWidth="0.8"
+      />
 
       {/* glass specular across the upper left */}
       <g clipPath="url(#dialClip)">
@@ -1163,7 +1308,8 @@ function StripChart({
     const plotL = CH_PAD_L;
     const plotT = CH_PAD_T;
     const plotB = h - CH_PAD_B;
-    const yFor = (v: number) => plotB - (Math.max(0, Math.min(100, v)) / 100) * (plotB - plotT);
+    const yFor = (v: number) =>
+      plotB - (Math.max(0, Math.min(100, v)) / 100) * (plotB - plotT);
 
     const draw = () => {
       const now = performance.now();
@@ -1185,11 +1331,14 @@ function StripChart({
       ctx.clip();
 
       // printed gridlines: minor every second, major every five
-      const phase = reduced ? 0 : ((now / 1000) * PAPER_PX_PER_SEC) % (PAPER_PX_PER_SEC * 5);
+      const phase = reduced
+        ? 0
+        : ((now / 1000) * PAPER_PX_PER_SEC) % (PAPER_PX_PER_SEC * 5);
       for (let i = 0; i * PAPER_PX_PER_SEC < w + PAPER_PX_PER_SEC * 5; i++) {
         const x = Math.round(w - phase - i * PAPER_PX_PER_SEC) + 0.5;
         if (x < plotL) continue;
-        ctx.strokeStyle = i % 5 === 0 ? "rgba(127,203,92,0.20)" : "rgba(127,203,92,0.09)";
+        ctx.strokeStyle =
+          i % 5 === 0 ? "rgba(127,203,92,0.20)" : "rgba(127,203,92,0.09)";
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(x, plotT);
@@ -1198,7 +1347,8 @@ function StripChart({
       }
       for (let v = 0; v <= 100; v += 10) {
         const y = Math.round(yFor(v)) + 0.5;
-        ctx.strokeStyle = v % 20 === 0 ? "rgba(127,203,92,0.22)" : "rgba(127,203,92,0.09)";
+        ctx.strokeStyle =
+          v % 20 === 0 ? "rgba(127,203,92,0.22)" : "rgba(127,203,92,0.09)";
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(plotL, y);
@@ -1352,7 +1502,9 @@ function Annunciator({
     setAcked(ANNUN_TILES.filter((t) => alarms[t.id]).map((t) => t.id));
   }, [alarms]);
 
-  const unacked = ANNUN_TILES.some((t) => alarms[t.id] && !acked.includes(t.id));
+  const unacked = ANNUN_TILES.some(
+    (t) => alarms[t.id] && !acked.includes(t.id),
+  );
 
   return (
     <>
@@ -1381,7 +1533,9 @@ function Annunciator({
         })}
       </div>
 
-      <div style={{ display: "flex", gap: 6, marginTop: 8, alignItems: "stretch" }}>
+      <div
+        style={{ display: "flex", gap: 6, marginTop: 8, alignItems: "stretch" }}
+      >
         <button
           type="button"
           className="switchbtn"
@@ -1439,7 +1593,9 @@ function ProcessTable({
       const target = processes[next];
       if (!target) return;
       onSelectProcess(target.pid);
-      const el = scrollRef.current?.querySelector<HTMLElement>(`[data-pid="${target.pid}"]`);
+      const el = scrollRef.current?.querySelector<HTMLElement>(
+        `[data-pid="${target.pid}"]`,
+      );
       el?.focus();
       el?.scrollIntoView({ block: "nearest" });
     },
@@ -1572,7 +1728,12 @@ function GuardedSwitch({
         : "Guard closed";
 
   return (
-    <div className="guard" data-enabled={enabled} data-armed={enabled && coverOpen} data-thrown={thrown}>
+    <div
+      className="guard"
+      data-enabled={enabled}
+      data-armed={enabled && coverOpen}
+      data-thrown={thrown}
+    >
       <div className="guard__well">
         <button
           type="button"
@@ -1653,7 +1814,10 @@ export function ReactorConsole({
   }, [stats]);
 
   const cores = stats?.coreUsage ?? [];
-  const memPercent = stats && stats.totalMemory > 0 ? (stats.usedMemory / stats.totalMemory) * 100 : 0;
+  const memPercent =
+    stats && stats.totalMemory > 0
+      ? (stats.usedMemory / stats.totalMemory) * 100
+      : 0;
   const coreSpread = cores.length ? Math.max(...cores) - Math.min(...cores) : 0;
 
   const alarms = useMemo<Record<string, boolean>>(
@@ -1697,12 +1861,31 @@ export function ReactorConsole({
           >
             <Nameplate />
 
-            <div className="well" style={{ display: "flex", gap: 2, padding: "6px 10px" }}>
+            <div
+              className="well"
+              style={{ display: "flex", gap: 2, padding: "6px 10px" }}
+            >
               <LampCell color="green" lit={lampTest || !!stats} label="Power" />
-              <LampCell color="green" lit={lampTest || !!stats} label="Data Link" />
-              <LampCell color="red" lit={lampTest || alarms.CPU_HIGH} label="CPU Alarm" />
-              <LampCell color="red" lit={lampTest || alarms.MEM_CRITICAL} label="Mem Trip" />
-              <LampCell color="amber" lit={lampTest || anyAlarm} label="Annun" />
+              <LampCell
+                color="green"
+                lit={lampTest || !!stats}
+                label="Data Link"
+              />
+              <LampCell
+                color="red"
+                lit={lampTest || alarms.CPU_HIGH}
+                label="CPU Alarm"
+              />
+              <LampCell
+                color="red"
+                lit={lampTest || alarms.MEM_CRITICAL}
+                label="Mem Trip"
+              />
+              <LampCell
+                color="amber"
+                lit={lampTest || anyAlarm}
+                label="Annun"
+              />
               <LampCell color="white" lit={lampTest} label="Test" />
             </div>
 
@@ -1757,7 +1940,10 @@ export function ReactorConsole({
         </Plate>
 
         {/* ---- strip chart recorder ---------------------------------------- */}
-        <Plate label="CPU Load Recorder" sub="Chan 1 · 0-100 pct · Chart 36 mm/min">
+        <Plate
+          label="CPU Load Recorder"
+          sub="Chan 1 · 0-100 pct · Chart 36 mm/min"
+        >
           <StripChart
             history={history}
             threshold={CPU_ALARM_THRESHOLD}
@@ -1767,14 +1953,27 @@ export function ReactorConsole({
 
         {/* ---- core array and memory --------------------------------------- */}
         <Plate label="Core Array" sub={`${cores.length} ch`}>
-          <div className="well" style={{ flex: 2, display: "flex", gap: 5, padding: 8, minHeight: 0 }}>
+          <div
+            className="well"
+            style={{
+              flex: 2,
+              display: "flex",
+              gap: 5,
+              padding: 8,
+              minHeight: 0,
+            }}
+          >
             {cores.length === 0 ? (
               <span className="nomen nomen--dark" style={{ margin: "auto" }}>
                 No Signal
               </span>
             ) : (
               cores.map((v, i) => (
-                <Bargraph key={i} value={v} label={String(i + 1).padStart(2, "0")} />
+                <Bargraph
+                  key={i}
+                  value={v}
+                  label={String(i + 1).padStart(2, "0")}
+                />
               ))
             )}
           </div>
@@ -1785,7 +1984,16 @@ export function ReactorConsole({
             <span className="nomen nomen--sub">Core Store</span>
           </div>
 
-          <div className="well" style={{ flex: 1.35, display: "flex", gap: 11, padding: 8, minHeight: 0 }}>
+          <div
+            className="well"
+            style={{
+              flex: 1.35,
+              display: "flex",
+              gap: 11,
+              padding: 8,
+              minHeight: 0,
+            }}
+          >
             <div style={{ width: 30, display: "flex" }}>
               <Bargraph value={memPercent} label="Pct" />
             </div>
@@ -1807,8 +2015,12 @@ export function ReactorConsole({
                 scale={0.68}
                 title="Memory in use, megabytes"
               />
-              <span className="mono" style={{ fontSize: 13, color: "rgba(228,220,198,0.72)" }}>
-                {((stats?.totalMemory ?? 0) / MB).toFixed(0).padStart(6, "0")} MB INST
+              <span
+                className="mono"
+                style={{ fontSize: 13, color: "rgba(228,220,198,0.72)" }}
+              >
+                {((stats?.totalMemory ?? 0) / MB).toFixed(0).padStart(6, "0")}{" "}
+                MB INST
               </span>
             </div>
           </div>
@@ -1844,7 +2056,11 @@ export function ReactorConsole({
 
         {/* ---- annunciator --------------------------------------------------- */}
         <Plate label="Annunciator" sub="Panel A">
-          <Annunciator alarms={alarms} lampTest={lampTest} onLampTest={setLampTest} />
+          <Annunciator
+            alarms={alarms}
+            lampTest={lampTest}
+            onLampTest={setLampTest}
+          />
         </Plate>
       </div>
       <div className="grain" aria-hidden="true" />
@@ -1865,6 +2081,21 @@ export default function App() {
   /* ── END DATA SEAM ────────────────────────────────────────────────────── */
 
   const [selectedPid, setSelectedPid] = useState<number | null>(null);
+
+  type SystemStats = {
+    cpuUsage: number;
+    totalMemory: number;
+    usedMemory: number;
+  };
+  const [statsInvoke, setStatsInvoke] = useState<SystemStats | null>(null);
+
+  async function loadStats() {
+    setStatsInvoke(await invoke<SystemStats>("get_system_stats"));
+  }
+
+  useEffect(() => {
+    loadStats();
+  }, []);
 
   const handleKill = useCallback((pid: number) => {
     // Wire this to the backend's kill command. The console only reports intent.

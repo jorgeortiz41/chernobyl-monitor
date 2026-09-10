@@ -7,11 +7,36 @@ struct SystemStats {
     cpu_usage: f32,
     total_memory: u64,
     used_memory: u64,
+    total_swap: u64,
+    used_swap: u64,
 }
 
 #[tauri::command]
 fn get_system_stats() -> SystemStats {
-    let mut sys = System::new();
+    let mut sys = System::new_all();
+
+    sys.refresh_all();
+
+    println!("=> system:");
+    // RAM and swap information:
+    println!("total memory: {} bytes", sys.total_memory());
+    println!("used memory : {} bytes", sys.used_memory());
+    println!("total swap  : {} bytes", sys.total_swap());
+    println!("used swap   : {} bytes", sys.used_swap());
+
+    // Display system information:
+    println!("System name:             {:?}", System::name());
+    println!("System kernel version:   {:?}", System::kernel_version());
+    println!("System OS version:       {:?}", System::os_version());
+    println!("System host name:        {:?}", System::host_name());
+
+    // Number of CPUs:
+    println!("NB CPUs: {}", sys.cpus().len());
+
+    // Display processes ID, name and disk usage:
+    for (pid, process) in sys.processes() {
+        println!("[{pid}] {:?} {:?}", process.name(), process.disk_usage());
+    }
 
     // CPU usage is a diff between two samples, so one refresh always reads 0.
     sys.refresh_cpu_usage();
@@ -23,6 +48,8 @@ fn get_system_stats() -> SystemStats {
         cpu_usage: sys.global_cpu_usage(),
         total_memory: sys.total_memory(),
         used_memory: sys.used_memory(),
+        total_swap: sys.total_swap(),
+        used_swap: sys.used_swap(),
     }
 }
 
