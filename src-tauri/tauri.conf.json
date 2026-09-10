@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "nexus",
-        "width": 800,
-        "height": 600
+        "title": "Nexus Station — Unit 1 Process Computer Console",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 1100,
+        "minHeight": 700
       }
     ],
     "security": {
