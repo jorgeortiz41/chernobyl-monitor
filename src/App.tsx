@@ -3,13 +3,23 @@ import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
+type SystemStats = {
+  cpuUsage: number;
+  totalMemory: number;
+  usedMemory: number;
+};
+
+const formatBytes = (b: number) => `${(b / 1024 ** 3).toFixed(2)} GB`;
+
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
+  const [stats, setStats] = useState<SystemStats | null>(null);
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     setGreetMsg(await invoke("greet", { name }));
+    setStats(await invoke("get_system_stats"));
   }
 
   return (
@@ -44,6 +54,12 @@ function App() {
         <button type="submit">Greet</button>
       </form>
       <p>{greetMsg}</p>
+      {stats && (
+        <ul>
+          <li>CPU: {stats.cpuUsage.toFixed(1)}</li>
+          <li>Memory: {formatBytes(stats.usedMemory)} / {formatBytes(stats.totalMemory)}</li>
+        </ul>
+      )}
     </main>
   );
 }
