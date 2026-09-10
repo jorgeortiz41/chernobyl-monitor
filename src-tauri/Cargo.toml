@@ -1,8 +1,8 @@
 [package]
 name = "nexus"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "A 1970s reactor control room skin for your system monitor"
+authors = ["jorgeortiz41"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

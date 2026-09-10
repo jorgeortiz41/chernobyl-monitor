@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Nexus",
+  "productName": "Chernobyl Monitor",
   "version": "0.1.0",
-  "identifier": "com.nexus.app",
+  "identifier": "com.chernobyl.monitor.app",
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "nexus",
-        "width": 800,
-        "height": 600
+        "title": "Chernobyl Monitor",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 1100,
+        "minHeight": 700
       }
     ],
     "security": {

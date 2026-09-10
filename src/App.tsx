@@ -1,67 +1,50 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import { useCallback, useEffect, useState } from "react";
+import "./styles/console.css";
+import { ReactorConsole } from "./components/ReactorConsole";
+import type { TripState } from "./components/instruments/GuardedSwitch";
+import { useSystemStats } from "./data/useSystemStats";
+import { killProcess } from "./data/systemMonitor";
 
-type SystemStats = {
-  cpuUsage: number;
-  totalMemory: number;
-  usedMemory: number;
-};
+/**
+ * Shell. The only place that knows where data comes from and what the
+ * operator's intent does to the machine.
+ */
+export default function App() {
+  const { stats, connected } = useSystemStats();
+  const [selectedPid, setSelectedPid] = useState<number | null>(null);
+  const [trip, setTrip] = useState<TripState>({
+    pid: null,
+    stillRunning: false,
+    error: null,
+  });
 
-const formatBytes = (b: number) => `${(b / 1024 ** 3).toFixed(2)} GB`;
+  // Did the target survive the signal? Answered by the next sample, not by us.
+  useEffect(() => {
+    if (trip.pid === null || !stats) return;
+    const alive = stats.processes.some((p) => p.pid === trip.pid);
+    setTrip((t) => (t.stillRunning === alive ? t : { ...t, stillRunning: alive }));
+  }, [stats, trip.pid]);
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
-  const [stats, setStats] = useState<SystemStats | null>(null);
+  const handleSelect = useCallback((pid: number | null) => {
+    setSelectedPid(pid);
+    setTrip({ pid: null, stillRunning: false, error: null });
+  }, []);
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-    setStats(await invoke("get_system_stats"));
-  }
+  const handleKill = useCallback((pid: number, force: boolean) => {
+    setTrip({ pid, stillRunning: true, error: null });
+    killProcess(pid, force).catch((err: unknown) => {
+      setTrip({ pid, stillRunning: true, error: String(err) });
+    });
+  }, []);
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-      {stats && (
-        <ul>
-          <li>CPU: {stats.cpuUsage.toFixed(1)}</li>
-          <li>Memory: {formatBytes(stats.usedMemory)} / {formatBytes(stats.totalMemory)}</li>
-        </ul>
-      )}
-    </main>
+    <ReactorConsole
+      stats={stats}
+      connected={connected}
+      selectedPid={selectedPid}
+      onSelectProcess={handleSelect}
+      onKillProcess={handleKill}
+      tripState={trip}
+    />
   );
 }
-
-export default App;
