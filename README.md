@@ -1,4 +1,4 @@
-# Chernobyl Monitor
+# Nuclear Monitor
 
 A system monitor that pretends it is a 1974 reactor control room.
 
