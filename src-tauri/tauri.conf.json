@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Chernobyl Monitor",
+  "productName": "Nuclear Monitor",
   "version": "0.1.0",
   "identifier": "com.chernobyl.monitor.app",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Chernobyl Monitor",
+        "title": "Nuclear Monitor",
         "width": 1280,
         "height": 820,
         "minWidth": 1100,
